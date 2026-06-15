@@ -79,7 +79,14 @@ class ProfileScreen extends StatelessWidget {
 
                 // Button
                 ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Contact request sent!'),
+      backgroundColor: Colors.indigo,
+    ),
+  );
+},,
                   icon: const Icon(Icons.connect_without_contact),
                   label: const Text('Contact Me'),
                   style: ElevatedButton.styleFrom(
