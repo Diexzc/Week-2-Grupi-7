@@ -1,0 +1,212 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const GradeCalculatorApp());
+}
+
+class GradeCalculatorApp extends StatelessWidget {
+  const GradeCalculatorApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Llogaritësi i Notave',
+      theme: ThemeData(
+        primarySwatch: Colors.teal,
+      ),
+      home: const CalculatorScreen(),
+    );
+  }
+}
+
+class CalculatorScreen extends StatefulWidget {
+  const CalculatorScreen({super.key});
+
+  @override
+  State<CalculatorScreen> createState() => _CalculatorScreenState();
+}
+
+class _CalculatorScreenState extends State<CalculatorScreen> {
+  final TextEditingController _nota1Controller = TextEditingController();
+  final TextEditingController _nota2Controller = TextEditingController();
+  final TextEditingController _nota3Controller = TextEditingController();
+
+  String _mesatarjaTekst = "";
+  String _statusiTekst = "";
+  Color _ngjyraStatusit = Colors.black;
+  bool _shfaqKartelen = false;
+
+  void _llogaritRezultatin() {
+    String t1 = _nota1Controller.text;
+    String t2 = _nota2Controller.text;
+    String t3 = _nota3Controller.text;
+
+    if (t1.isEmpty || t2.isEmpty || t3.isEmpty) {
+      setState(() {
+        _mesatarjaTekst = "Gabim!";
+        _statusiTekst = "Ju lutem plotësoni të gjitha fushat.";
+        _ngjyraStatusit = Colors.orange;
+        _shfaqKartelen = true;
+      });
+      return;
+    }
+
+    double? n1 = double.tryParse(t1);
+    double? n2 = double.tryParse(t2);
+    double? n3 = double.tryParse(t3);
+
+    if (n1 == null || n2 == null || n3 == null) {
+      setState(() {
+        _mesatarjaTekst = "Gabim!";
+        _statusiTekst = "Fushat duhet të përmbajnë vetëm numra.";
+        _ngjyraStatusit = Colors.red;
+        _shfaqKartelen = true;
+      });
+      return;
+    }
+
+    double mesatarja = (n1 + n2 + n3) / 3;
+
+    String statusi;
+    Color ngjyra;
+
+    if (mesatarja >= 5.0) {
+      statusi = "Kalon";
+      ngjyra = Colors.green;
+    } else {
+      statusi = "Duhet përmirësim";
+      ngjyra = Colors.red;
+    }
+
+    setState(() {
+      _mesatarjaTekst = "Mesatarja: ${mesatarja.toStringAsFixed(2)}";
+      _statusiTekst = "Statusi: $statusi";
+      _ngjyraStatusit = ngjyra;
+      _shfaqKartelen = true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Llogaritësi i Notave'),
+        backgroundColor: Colors.teal,
+        centerTitle: true,
+      ),
+      backgroundColor: const Color(0xFFFFF8FA),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 10),
+              const Text(
+                'Shkruani tri notat ose pikët më poshtë:',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 25),
+
+              TextField(
+                controller: _nota1Controller,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Nota 1',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 15),
+
+              TextField(
+                controller: _nota2Controller,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Nota 2',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 15),
+
+              TextField(
+                controller: _nota3Controller,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Nota 3',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 25),
+
+              ElevatedButton(
+                onPressed: _llogaritRezultatin,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: const Text(
+                  'Llogarit',
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 35),
+
+              // Kjo pjesë u rregullua plotësisht që të mos ketë asnjë kllapë ose konstante të gabuar
+              _shfaqKartelen
+                  ? Card(
+                      elevation: 4,
+                      color: const Color(0xFFF6F0F4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 25.0, horizontal: 15.0),
+                        child: Column(
+                          children: [
+                            Text(
+                              _mesatarjaTekst,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              _statusiTekst,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: _ngjyraStatusit,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
