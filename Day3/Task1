@@ -1,0 +1,228 @@
+import 'package:flutter/material.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Mini Quiz',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(colorSchemeSeed: Colors.indigo),
+      home: const QuizScreen(),
+    );
+  }
+}
+
+// Model class
+class Question {
+  final String question;
+  final List<String> options;
+  final int correctIndex;
+
+  Question({
+    required this.question,
+    required this.options,
+    required this.correctIndex,
+  });
+}
+
+class QuizScreen extends StatefulWidget {
+  const QuizScreen({super.key});
+
+  @override
+  State<QuizScreen> createState() => _QuizScreenState();
+}
+
+class _QuizScreenState extends State<QuizScreen> {
+  // List of questions
+  final List<Question> questions = [
+    Question(
+      question: 'What language does Flutter use?',
+      options: ['Java', 'Dart', 'Python', 'Swift'],
+      correctIndex: 1,
+    ),
+    Question(
+      question: 'What function starts a Flutter app?',
+      options: ['start()', 'main()', 'init()', 'run()'],
+      correctIndex: 1,
+    ),
+    Question(
+      question: 'Which widget shows text?',
+      options: ['Text', 'Label', 'Caption', 'Title'],
+      correctIndex: 0,
+    ),
+  ];
+
+  int currentIndex = 0;
+  int score = 0;
+
+  void answerQuestion(int selectedIndex) {
+    bool isCorrect = selectedIndex == questions[currentIndex].correctIndex;
+
+    if (isCorrect) {
+      setState(() => score++);
+    }
+
+    // Show feedback dialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(isCorrect ? 'Correct! ✅' : 'Wrong ❌'),
+        content: Text(
+          isCorrect
+              ? 'Great job!'
+              : 'The correct answer was: ${questions[currentIndex].options[questions[currentIndex].correctIndex]}',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // close dialog
+              nextQuestion();
+            },
+            child: const Text('Next'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void nextQuestion() {
+    if (currentIndex < questions.length - 1) {
+      setState(() => currentIndex++);
+    } else {
+      // Go to result screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ResultScreen(
+            score: score,
+            total: questions.length,
+            onRestart: restartQuiz,
+          ),
+        ),
+      );
+    }
+  }
+
+  void restartQuiz() {
+    setState(() {
+      currentIndex = 0;
+      score = 0;
+    });
+    Navigator.pop(context); // go back to quiz screen
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final question = questions[currentIndex];
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: AppBar(
+        title: Text('Question ${currentIndex + 1}/${questions.length}'),
+        backgroundColor: Colors.indigo,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              question.question,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 24),
+
+            // Options list
+            Expanded(
+              child: ListView.builder(
+                itemCount: question.options.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      title: Text(question.options[index]),
+                      onTap: () => answerQuestion(index),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Details / Result screen
+class ResultScreen extends StatelessWidget {
+  final int score;
+  final int total;
+  final VoidCallback onRestart;
+
+  const ResultScreen({
+    super.key,
+    required this.score,
+    required this.total,
+    required this.onRestart,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: AppBar(
+        title: const Text('Result'),
+        backgroundColor: Colors.indigo,
+        foregroundColor: Colors.white,
+      ),
+      body: Center(
+        child: Card(
+          elevation: 8,
+          margin: const EdgeInsets.all(24),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.emoji_events, size: 64, color: Colors.amber),
+                const SizedBox(height: 16),
+                Text(
+                  'You scored $score / $total',
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: onRestart,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Restart Quiz'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
