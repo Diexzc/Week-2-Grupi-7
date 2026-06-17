@@ -1,0 +1,9 @@
+{
+    "name": "Registration Form",
+    "short_name": "Register",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0A0A1A",
+    "theme_color": "#7C4DFF",
+    "description": "Registration form with validation built with Flutter."
+}
