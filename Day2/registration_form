@@ -1,0 +1,193 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Registration Form',
+      home: const RegistrationScreen(),
+    );
+  }
+}
+
+class RegistrationScreen extends StatefulWidget {
+  const RegistrationScreen({super.key});
+
+  @override
+  State<RegistrationScreen> createState() => _RegistrationScreenState();
+}
+
+class _RegistrationScreenState extends State<RegistrationScreen> {
+  // Key për të kontrolluar dhe validuar gjithë formën njëkohësisht
+  final _formKey = GlobalKey<FormState>();
+
+  // Controllers - lexojnë çfarë shkruan përdoruesi në çdo fushë
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  // Roli/Statusi i zgjedhur nga dropdown-i
+  String selectedRole = 'Student';
+  final List<String> roleOptions = ['Student', 'Mentor', 'Admin'];
+
+  // ---- VALIDIMET ----
+  // Çdo funksion validimi kthen null nëse nuk ka gabim, ose mesazhin e gabimit si String
+
+  String? validateName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Emri është i detyrueshëm';
+    }
+    return null;
+  }
+
+  String? validateEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Email-i është i detyrueshëm';
+    }
+    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    if (!emailRegex.hasMatch(value.trim())) {
+      return 'Email-i nuk është valid';
+    }
+    return null;
+  }
+
+  String? validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password-i është i detyrueshëm';
+    }
+    if (value.length < 6) {
+      return 'Password-i duhet të ketë të paktën 6 karaktere';
+    }
+    return null;
+  }
+
+  // Thirret kur shtypet butoni "Regjistrohu"
+  void submitForm() {
+    // validate() i kontrollon të gjitha TextFormField njëherësh
+    // dhe i shfaq mesazhet e gabimit poshtë fushave përkatëse, pa prishur layout-in
+    final isValid = _formKey.currentState!.validate();
+
+    if (!isValid) {
+      return; // ndalo nëse ka gabime
+    }
+
+    // Forma është valide -> shfaq dialog me përmbledhjen (summary)
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Regjistrimi u krye me sukses'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Emri: ${nameController.text.trim()}'),
+            const SizedBox(height: 8),
+            Text('Email: ${emailController.text.trim()}'),
+            const SizedBox(height: 8),
+            Text('Roli: $selectedRole'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Mbyll'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    // Pastrohen controllers kur ekrani largohet, për të shmangur memory leaks
+    nameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Formulari i Regjistrimit')),
+      body: SingleChildScrollView(
+        // SingleChildScrollView shmang overflow-in kur tastiera hapet
+        // ose kur mesazhet e gabimit shtojnë lartësi shtesë
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextFormField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Emri',
+                  border: OutlineInputBorder(),
+                ),
+                validator: validateName,
+              ),
+              const SizedBox(height: 16),
+
+              TextFormField(
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
+                validator: validateEmail,
+              ),
+              const SizedBox(height: 16),
+
+              TextFormField(
+                controller: passwordController,
+                obscureText: true, // i fsheh karakteret e password-it
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                ),
+                validator: validatePassword,
+              ),
+              const SizedBox(height: 16),
+
+              DropdownButtonFormField<String>(
+                value: selectedRole,
+                decoration: const InputDecoration(
+                  labelText: 'Roli',
+                  border: OutlineInputBorder(),
+                ),
+                items: roleOptions.map((role) {
+                  return DropdownMenuItem(
+                    value: role,
+                    child: Text(role),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedRole = value!;
+                  });
+                },
+              ),
+              const SizedBox(height: 24),
+
+              ElevatedButton(
+                onPressed: submitForm,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text('Regjistrohu'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
