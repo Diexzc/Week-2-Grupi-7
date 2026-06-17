@@ -1,0 +1,9 @@
+{
+    "name": "Quiz App",
+    "short_name": "Quiz",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0F0C29",
+    "theme_color": "#6C63FF",
+    "description": "Multi-screen quiz application built with Flutter."
+}
