@@ -1,0 +1,234 @@
+import 'package:flutter/material.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Registration Form',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(colorSchemeSeed: Colors.indigo),
+      home: const RegistrationScreen(),
+    );
+  }
+}
+
+class RegistrationScreen extends StatefulWidget {
+  const RegistrationScreen({super.key});
+
+  @override
+  State<RegistrationScreen> createState() => _RegistrationScreenState();
+}
+
+class _RegistrationScreenState extends State<RegistrationScreen> {
+  // Controllers
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  // Role dropdown value
+  String selectedRole = 'Student';
+  final List<String> roles = ['Student', 'Intern', 'Mentor'];
+
+  // Error messages
+  String nameError = '';
+  String emailError = '';
+  String passwordError = '';
+
+  bool isValidEmail(String email) {
+    return email.contains('@') && email.contains('.');
+  }
+
+  void submitForm() {
+    String name = nameController.text.trim();
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+
+    // Reset errors
+    setState(() {
+      nameError = '';
+      emailError = '';
+      passwordError = '';
+    });
+
+    bool hasError = false;
+
+    if (name.isEmpty) {
+      setState(() => nameError = 'Name cannot be empty');
+      hasError = true;
+    }
+
+    if (email.isEmpty) {
+      setState(() => emailError = 'Email cannot be empty');
+      hasError = true;
+    } else if (!isValidEmail(email)) {
+      setState(() => emailError = 'Enter a valid email');
+      hasError = true;
+    }
+
+    if (password.isEmpty) {
+      setState(() => passwordError = 'Password cannot be empty');
+      hasError = true;
+    } else if (password.length < 6) {
+      setState(() => passwordError = 'Password must be at least 6 characters');
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    // Show summary dialog on success
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green),
+            SizedBox(width: 8),
+            Text('Registration Successful'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Name: $name'),
+            const SizedBox(height: 6),
+            Text('Email: $email'),
+            const SizedBox(height: 6),
+            Text('Role: $selectedRole'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              clearForm();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void clearForm() {
+    setState(() {
+      nameController.clear();
+      emailController.clear();
+      passwordController.clear();
+      selectedRole = 'Student';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: AppBar(
+        title: const Text('Registration Form'),
+        backgroundColor: Colors.indigo,
+        foregroundColor: Colors.white,
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Card(
+            elevation: 8,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Create Account',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Name
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Full Name',
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.person),
+                      errorText: nameError.isEmpty ? null : nameError,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Email
+                  TextField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.email),
+                      errorText: emailError.isEmpty ? null : emailError,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Password
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.lock),
+                      errorText: passwordError.isEmpty ? null : passwordError,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Role dropdown
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedRole,
+                    decoration: const InputDecoration(
+                      labelText: 'Role',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.badge),
+                    ),
+                    items: roles.map((role) {
+                      return DropdownMenuItem(value: role, child: Text(role));
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() => selectedRole = value!);
+                    },
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Submit button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: submitForm,
+                      icon: const Icon(Icons.app_registration),
+                      label: const Text('Register'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
